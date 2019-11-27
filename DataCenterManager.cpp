@@ -16,7 +16,7 @@ StatusType RemoveDataCenter(void *DS, int dataCenterID){
 }
 
 StatusType RequestServer(void *DS, int dataCenterID, int serverID, int os, int *assignedID){
-
+change test
 }
 
 StatusType FreeServer(void *DS, int dataCenterID, int serverID){
