@@ -16,19 +16,17 @@ struct Node {
 template<class T>
 class AVLTree {
 public:
-    Node<T>* root;
 
-    AVLTree(){root= NULL;}
+
     int treeHeight(Node<T> *);
-    Node<T> * treeInsert(Node<T> *, T, int); // tree's root, node to insert, DataCenter ID
+    Node<T>* treeInsert(Node<T> *, T);
     Node<T> *RR(Node<T> *);
     Node<T> *LL(Node<T> *);
     Node<T> *LR(Node<T> *);
     Node<T> *RL(Node<T> *);
+    int treeDiff(Node<T> *);
+    Node<T>* treeFind(Node<T>* , T );
     Node<T> * treeBalance(Node<T> *);
-
-    void show(Node<T> *, int);
-    void inorder(Node<T> *);
 };
 
 
