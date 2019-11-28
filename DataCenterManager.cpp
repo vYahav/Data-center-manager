@@ -2,38 +2,41 @@
 // Created by Yahav on 11/27/2019.
 //
 
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "DataCenterManager.h"
-template<class T>
-struct Tree {
-    T d;
-    struct Tree *l;
-    struct Tree *r;
-};
-void * Init(){
-    Tree<int> *t= new Tree<int>;
-    return t;
-}
 
-StatusType AddDataCenter(void *DS, int dataCenterID, int numOfServers){
 
-}
+    StatusType DataCenterManager::AddDataCenter(int , int ){
 
-StatusType RemoveDataCenter(void *DS, int dataCenterID){
 
-}
+    }
 
-StatusType RequestServer(void *DS, int dataCenterID, int serverID, int os, int *assignedID){
+    StatusType DataCenterManager::RemoveDataCenter(int ){
 
-}
+    }
 
-StatusType FreeServer(void *DS, int dataCenterID, int serverID){
+    StatusType DataCenterManager::RequestServer(int , int , int , int *){
 
-}
+    }
 
-StatusType GetDataCentersByOS(void *DS, int os, int **dataCenters, int* numOfDataCenters){
+    StatusType DataCenterManager::FreeServer(int , int ){
 
-}
+    }
 
-void Quit(void** DS){
+    StatusType DataCenterManager::GetDataCentersByOS(int , int **, int* ){
 
-}
+    }
+
+    void DataCenterManager::Delete(){
+
+    }
+
+
+
+
+
+
+

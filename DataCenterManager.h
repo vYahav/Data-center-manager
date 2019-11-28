@@ -1,49 +1,37 @@
-/****************************************************************************/
-/*                                                                          */
-/* This file contains the interface functions                               */
-/* you should use for the wet ex 1                                          */
-/*                                                                          */
-/****************************************************************************/
+//
+// Created by Yahav on 11/27/2019.
+//
 
-/****************************************************************************/
-/*                                                                          */
-/* File Name : library1.h                                                   */
-/*                                                                          */
-/****************************************************************************/
+#ifndef MIVNIRATUV1_DATACENTERMANAGER_H
+#define MIVNIRATUV1_DATACENTERMANAGER_H
+#include "library1.h"
+#include "AVLTree.h"
+struct Server{
+    int opSystem; //Linux=0 , Windows=1. Default=0.
+    bool inUse; //True= server is currently in use , False= server is free to use.
+};
+struct DataCenter {
+    int dataCenterID;
+    int numOfServers;
+    Server* servers;
+};
 
-#ifndef _234218_WET1
-#define _234218_WET1
+class DataCenterManager {
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    AVLTree<DataCenter> * root;
+    StatusType AddDataCenter(int dataCenterID, int numOfServers);
 
-/* Return Values
- * ----------------------------------- */
-typedef enum {
-    SUCCESS = 0,
-    FAILURE = -1,
-    ALLOCATION_ERROR = -2,
-    INVALID_INPUT = -3
-} StatusType;
+    StatusType RemoveDataCenter(int dataCenterID);
+
+    StatusType RequestServer(int dataCenterID, int serverID, int os, int *assignedID);
+
+    StatusType FreeServer(int dataCenterID, int serverID);
+
+    StatusType GetDataCentersByOS(int os, int **dataCenters, int* numOfDataCenters);
+
+    void Delete();
+
+};
 
 
-void *Init();
-
-StatusType AddDataCenter(void *DS, int dataCenterID, int numOfServers);
-
-StatusType RemoveDataCenter(void *DS, int dataCenterID);
-
-StatusType RequestServer(void *DS, int dataCenterID, int serverID, int os, int *assignedID);
-
-StatusType FreeServer(void *DS, int dataCenterID, int serverID);
-
-StatusType GetDataCentersByOS(void *DS, int os, int **dataCenters, int* numOfDataCenters);
-
-void Quit(void** DS);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif    /*_234218_WET1 */
+#endif //MIVNIRATUV1_DATACENTERMANAGER_H
