@@ -107,3 +107,44 @@ Node<T>* AVLTree<T>::treeFind(Node<T>* n, T lookingFor)
     if(n->data > lookingFor) return treeFind(n->l,lookingFor);
     return NULL;
 }
+
+template<class T>
+Node<T>* AVLTree<T>::treeDeleteNode(Node<T> *n,T deleteNode) {
+    if (n == NULL) return n;
+    if(n->data > deleteNode) {
+        n->l= treeDeleteNode(n->l, deleteNode);
+
+    }
+    if(n->data < deleteNode){
+        n->r= treeDeleteNode(n->r, deleteNode);
+    }
+    if(n->data == deleteNode){
+        if(n->l == NULL || n->r == NULL){ //1 or less children
+            Node<T> *helper = NULL;
+            if(n->l == NULL)  helper = n->r;
+            else helper = n->l;
+
+            if(helper == NULL) {
+                helper = n;
+                n= NULL;
+            }
+            else{
+                *n = *helper;
+            }
+            free(helper);
+        }
+        else{ //2 children
+            Node<T>* temp = n->r;
+            while (temp->l != NULL)
+                temp = temp->l;
+
+
+            n->data = temp->data;
+
+            n->r = treeDeleteNode(n->r, temp->data);
+        }
+
+    }
+    if(n!=NULL) n= treeBalance(n);
+    return n;
+}

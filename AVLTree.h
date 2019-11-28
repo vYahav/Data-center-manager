@@ -27,6 +27,8 @@ public:
     int treeDiff(Node<T> *);
     Node<T>* treeFind(Node<T>* , T );
     Node<T> * treeBalance(Node<T> *);
+    Node<T>* treeDeleteNode(Node<T> *,T);
+
 };
 
 
