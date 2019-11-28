@@ -3,8 +3,15 @@
 //
 
 #include "DataCenterManager.h"
+template<class T>
+struct Tree {
+    T d;
+    struct Tree *l;
+    struct Tree *r;
+};
 void * Init(){
-
+    Tree<int> *t= new Tree<int>;
+    return t;
 }
 
 StatusType AddDataCenter(void *DS, int dataCenterID, int numOfServers){
@@ -16,7 +23,7 @@ StatusType RemoveDataCenter(void *DS, int dataCenterID){
 }
 
 StatusType RequestServer(void *DS, int dataCenterID, int serverID, int os, int *assignedID){
-change test
+
 }
 
 StatusType FreeServer(void *DS, int dataCenterID, int serverID){
