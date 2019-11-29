@@ -6,9 +6,10 @@
 #define MIVNIRATUV1_DATACENTERMANAGER_H
 #include "library1.h"
 #include "AVLTree.h"
+
 struct Server{
-    int opSystem; //Linux=0 , Windows=1. Default=0.
-    bool inUse; //True= server is currently in use , False= server is free to use.
+    int opSystem; //Linux=0 , Windows=1.   Default=0.
+    bool inUse; //True= server is currently in use , False= server is free to use.   Default=False.
 };
 struct DataCenter {
     int dataCenterID;
@@ -17,8 +18,8 @@ struct DataCenter {
 };
 
 class DataCenterManager {
-
-    AVLTree<DataCenter> * root;
+public:
+    Node<DataCenter> * root;
     StatusType AddDataCenter(int dataCenterID, int numOfServers);
 
     StatusType RemoveDataCenter(int dataCenterID);
@@ -29,10 +30,12 @@ class DataCenterManager {
 
     StatusType GetDataCentersByOS(int os, int **dataCenters, int* numOfDataCenters);
 
-    void Delete();
+    void Quit();
 
 };
-
+bool operator< (const DataCenter& x,const DataCenter& y);
+bool operator> (const DataCenter& x,const DataCenter& y);
+bool operator== (const DataCenter& x,const DataCenter& y);
 
 
 #endif //MIVNIRATUV1_DATACENTERMANAGER_H
