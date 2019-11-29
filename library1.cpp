@@ -11,6 +11,7 @@ StatusType AddDataCenter ( void * DS, int dataCenterID, int numOfServers) {
 }
 
 StatusType RemoveDataCenter(void *DS, int dataCenterID){
+    if(dataCenterID<=0 || DS==NULL) return INVALID_INPUT;
     return ((DataCenterManager *)DS)-> RemoveDataCenter (dataCenterID);
 }
 

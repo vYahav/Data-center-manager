@@ -5,7 +5,23 @@
 #ifndef MIVNIRATUV1_DATACENTERMANAGER_H
 #define MIVNIRATUV1_DATACENTERMANAGER_H
 #include "library1.h"
+//============================================================================================
+//=========================    Stack Class    ================================================
+class Stack{
+public:
+    int topNum;
+    int* a; // Maximum size of Stack
 
+    Stack(int stackSize) {
+        topNum = -1;
+        a=new int[stackSize];
+    }
+    bool push(int x);
+    int pop();
+    int top();
+    bool isEmpty();
+
+};
 //============================================================================================
 //=========================    AVL Tree Class    =============================================
 template<class T>

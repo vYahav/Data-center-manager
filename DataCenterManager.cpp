@@ -13,9 +13,44 @@ using namespace std;
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+//============================================================================================
+//=========================    Stack Class Functions   =======================================
+
+bool Stack::push(int x)
+{
+        a[++topNum] = x;
+        return true;
+}
+
+int Stack::pop()
+{
+    if (topNum < 0) {
+        cout << "Stack is Empty, DO EMPTY CHECK BEFORE CALLING THIS FUNC!";
+        return 0;
+    }
+        int x = a[topNum--];
+        return x;
+}
+int Stack::top()
+{
+    if (topNum < 0) {
+        cout << "Stack is Empty, DO EMPTY CHECK BEFORE CALLING THIS FUNC!";
+        return 0;
+    }
+    else {
+        int x = a[topNum];
+        return x;
+    }
+}
+
+bool Stack::isEmpty()
+{
+    return (topNum < 0);
+}
+
 
 //============================================================================================
-//=========================    AVLTree Class Functions    ==========================
+//=========================    AVLTree Class Functions    ====================================
 template<class T>
 Node<T>* AVLTree<T>::RR(Node<T>* n){
     Node<T> * n2;
@@ -187,22 +222,54 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
 }
 
 StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){
+    //Setting up the Data Center to look for.  O(1)
+    DataCenter ds;
+    ds.dataCenterID=dataCenterID;
+    //Getting the node we want to delete.  O(log(n))
+    AVLTree<DataCenter> t;
+    Node<DataCenter>* n=t.treeFind(this->root,ds);
+    if(n==NULL) return FAILURE;
+    //Removing the node from the tree. O(log(n))
+    Node<DataCenter>* temp=t.treeDeleteNode(this->root,ds);
+    if(temp==NULL) return FAILURE;
+    this->root=temp;
+    //Free-ing the node values. O(1)
+    delete n->data.servers;
+    delete n;
+    //Done.
     return SUCCESS;
 }
 
 StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int os, int *assignedID){
-    return SUCCESS;
+    //Setting up Data Center.  O(1)
 
+    //Retrieving the given Data Center. O(log(n))
+
+    //Finding the given server.
+
+    //serverID is taken; Finding a different server with the same operating system
+
+    //Couldn't find a different server with the same operating system; Finding a free server and installing the given OS
+
+    //Server
+    return SUCCESS;
 }
 
 StatusType DataCenterManager::FreeServer(int dataCenterID, int serverID){
-    return SUCCESS;
+    //Setting up Data Center. O(1)
 
+    //Retrieving the given Data Center. O(log(n))
+
+    //Finding the given server and changing "inUse" to False.  O(1)
+
+    return SUCCESS;
 }
 
 StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int* numOfDataCenters){
-    return SUCCESS;
+    //Iterating through all of the data centers and putting them in an array.  O(n)
 
+    //Sorting
+    return SUCCESS;
 }
 void DataCenterManager::Quit(){
 
