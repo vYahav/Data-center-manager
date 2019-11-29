@@ -228,16 +228,17 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
     ds.servers[serverID]->data;
     if(!ds.servers[serverID]->data.inUse)
     {
-        //Mark ds.servers[serverID]->data.inUse=true
-        //*assignedID=serverID
-        //ds.servers[serverID]->data.opSystem=os
-        //Update current server's r to be l's r, and current server's l to be r's l.
-        //Update current server r and l to NULL
+        ds.servers[serverID]->data.inUse=true;
+        *assignedID=serverID;
+        ds.servers[serverID]->data.opSystem=os;
+        ds.servers[serverID]->r->l=ds.servers[serverID]->l;
+        ds.servers[serverID]->l->r=ds.servers[serverID]->r;
+        ds.servers[serverID]->l=NULL;
+        ds.servers[serverID]->r=NULL;
 
-        cout<<endl<<"Nice!"<<endl;
         return SUCCESS;
     }
-    cout<<endl<<"NOT Nice!"<<endl;
+    cout<<endl<<"NOT Nice! To The Next Step!"<<endl;
     return FAILURE;
     //serverID is taken; Finding a different server with the same operating system
 
