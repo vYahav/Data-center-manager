@@ -174,7 +174,8 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
     ds.dataCenterID=dataCenterID;
     ds.numOfServers=numOfServers;
     ds.servers=new Node<Server>*[numOfServers];
-    ds.firstServerID=0;
+    ds.firstServerID=new int;
+    *ds.firstServerID=0;
     if(ds.servers==NULL) return ALLOCATION_ERROR; //Failed to allocate memory for the array
     for (int i = 0; i < numOfServers; i++) { //Creating the servers.  O(m)
         Node<Server>* newNode= new Node<Server>;
@@ -184,10 +185,12 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
         ds.servers[i]=newNode;
     }
     //Linking the servers with each other.  O(m)
+    ds.servers[0]->l=NULL;
     for (int j = 0; j < numOfServers-1; j++) {
         ds.servers[j]->r=ds.servers[j+1];
         ds.servers[j+1]->l=ds.servers[j];
     }
+    ds.servers[numOfServers-1]->r=NULL;
     //Inserting the data center in the tree.  O(2*log(n)) = O(log(n))
     AVLTree<DataCenter> t;
     if(t.treeFind(this->root,ds)!=NULL) return FAILURE; //return failure because there is already a center with this ID.   O(log(n))
@@ -228,18 +231,21 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
     ds.servers[serverID]->data;
     if(!ds.servers[serverID]->data.inUse)
     {
+        if((*ds.firstServerID)==serverID && ds.servers[serverID]->r!=NULL)
+        {
+            (*ds.firstServerID)=ds.servers[serverID]->r->data.serverID;
+        }
         ds.servers[serverID]->data.inUse=true;
         *assignedID=serverID;
         ds.servers[serverID]->data.opSystem=os;
-        ds.servers[serverID]->r->l=ds.servers[serverID]->l;
-        ds.servers[serverID]->l->r=ds.servers[serverID]->r;
+        if(ds.servers[serverID]->r!=NULL) ds.servers[serverID]->r->l=ds.servers[serverID]->l;
+        if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
         ds.servers[serverID]->l=NULL;
         ds.servers[serverID]->r=NULL;
 
         return SUCCESS;
     }
     cout<<endl<<"NOT Nice! To The Next Step!"<<endl;
-    return FAILURE;
     //serverID is taken; Finding a different server with the same operating system
 
     //Couldn't find a different server with the same operating system; Finding a free server and installing the given OS

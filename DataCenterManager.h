@@ -48,7 +48,7 @@ struct DataCenter {
     int dataCenterID;
     int numOfServers;
     Node<Server>** servers;
-    int firstServerID;
+    int * firstServerID;
 };
 
 class DataCenterManager {
