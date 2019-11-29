@@ -13,40 +13,6 @@ using namespace std;
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-//============================================================================================
-//=========================    Stack Class Functions   =======================================
-
-bool Stack::push(int x)
-{
-        a[++topNum] = x;
-        return true;
-}
-
-int Stack::pop()
-{
-    if (topNum < 0) {
-        cout << "Stack is Empty, DO EMPTY CHECK BEFORE CALLING THIS FUNC!";
-        return 0;
-    }
-        int x = a[topNum--];
-        return x;
-}
-int Stack::top()
-{
-    if (topNum < 0) {
-        cout << "Stack is Empty, DO EMPTY CHECK BEFORE CALLING THIS FUNC!";
-        return 0;
-    }
-    else {
-        int x = a[topNum];
-        return x;
-    }
-}
-
-bool Stack::isEmpty()
-{
-    return (topNum < 0);
-}
 
 
 //============================================================================================
@@ -207,21 +173,29 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
     DataCenter ds;
     ds.dataCenterID=dataCenterID;
     ds.numOfServers=numOfServers;
-    ds.servers=new Server[numOfServers];
+    ds.servers=new Node<Server>*[numOfServers];
+    ds.firstServerID=0;
     if(ds.servers==NULL) return ALLOCATION_ERROR; //Failed to allocate memory for the array
-    for (int i = 0; i < numOfServers; ++i) {
-        ds.servers[i].inUse=false;
-        ds.servers[i].opSystem=0;
+    for (int i = 0; i < numOfServers; i++) { //Creating the servers.  O(m)
+        Node<Server>* newNode= new Node<Server>;
+        (*newNode).data.opSystem=0;
+        (*newNode).data.inUse=false;
+        (*newNode).data.serverID=i;
+        ds.servers[i]=newNode;
+    }
+    //Linking the servers with each other.  O(m)
+    for (int j = 0; j < numOfServers-1; j++) {
+        ds.servers[j]->r=ds.servers[j+1];
+        ds.servers[j+1]->l=ds.servers[j];
     }
     //Inserting the data center in the tree.  O(2*log(n)) = O(log(n))
     AVLTree<DataCenter> t;
     if(t.treeFind(this->root,ds)!=NULL) return FAILURE; //return failure because there is already a center with this ID.   O(log(n))
     this->root = t.treeInsert(this->root , ds);
-
     return SUCCESS;
 }
 
-StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){
+StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){   // O(log(n) + m)
     //Setting up the Data Center to look for.  O(1)
     DataCenter ds;
     ds.dataCenterID=dataCenterID;
@@ -236,21 +210,40 @@ StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){
     //Free-ing the node values. O(1)
     delete n->data.servers;
     delete n;
+    //NEED TO ADD HERE: FREE THE SERVERS NODES AND ARRAY
+
     //Done.
     return SUCCESS;
 }
 
 StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int os, int *assignedID){
     //Setting up Data Center.  O(1)
-
+    DataCenter ds;
+    ds.dataCenterID=dataCenterID;
     //Retrieving the given Data Center. O(log(n))
-
+    AVLTree<DataCenter> t;
+    ds= t.treeFind(this->root,ds)->data;
+    if(this->root==NULL) return FAILURE;
     //Finding the given server.
+    ds.servers[serverID]->data;
+    if(!ds.servers[serverID]->data.inUse)
+    {
+        //Mark ds.servers[serverID]->data.inUse=true
+        //*assignedID=serverID
+        //ds.servers[serverID]->data.opSystem=os
+        //Update current server's r to be l's r, and current server's l to be r's l.
+        //Update current server r and l to NULL
 
+        cout<<endl<<"Nice!"<<endl;
+        return SUCCESS;
+    }
+    cout<<endl<<"NOT Nice!"<<endl;
+    return FAILURE;
     //serverID is taken; Finding a different server with the same operating system
 
     //Couldn't find a different server with the same operating system; Finding a free server and installing the given OS
 
+    //Remove server from the "free[OS]ServerIDs" stack and update numOfWindowsServers and numOfLinuxServers value accordingly.
     //Server
     return SUCCESS;
 }

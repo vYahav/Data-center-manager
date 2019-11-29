@@ -5,23 +5,7 @@
 #ifndef MIVNIRATUV1_DATACENTERMANAGER_H
 #define MIVNIRATUV1_DATACENTERMANAGER_H
 #include "library1.h"
-//============================================================================================
-//=========================    Stack Class    ================================================
-class Stack{
-public:
-    int topNum;
-    int* a; // Maximum size of Stack
 
-    Stack(int stackSize) {
-        topNum = -1;
-        a=new int[stackSize];
-    }
-    bool push(int x);
-    int pop();
-    int top();
-    bool isEmpty();
-
-};
 //============================================================================================
 //=========================    AVL Tree Class    =============================================
 template<class T>
@@ -58,11 +42,13 @@ public:
 struct Server{
     int opSystem; //Linux=0 , Windows=1.   Default=0.
     bool inUse; //True= server is currently in use , False= server is free to use.   Default=False.
+    int serverID;
 };
 struct DataCenter {
     int dataCenterID;
     int numOfServers;
-    Server* servers;
+    Node<Server>** servers;
+    int firstServerID;
 };
 
 class DataCenterManager {
