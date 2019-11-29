@@ -5,7 +5,39 @@
 #ifndef MIVNIRATUV1_DATACENTERMANAGER_H
 #define MIVNIRATUV1_DATACENTERMANAGER_H
 #include "library1.h"
-#include "AVLTree.h"
+
+//============================================================================================
+//=========================    AVL Tree Class    =============================================
+template<class T>
+struct Node {
+    T data;
+    struct Node<T> *l;
+    struct Node<T> *r;
+};
+
+
+template<class T>
+class AVLTree {
+public:
+    int treeHeight(Node<T> *);
+    Node<T>* treeInsert(Node<T>*, T);
+    Node<T> *RR(Node<T> *);
+    Node<T> *LL(Node<T> *);
+    Node<T> *LR(Node<T> *);
+    Node<T> *RL(Node<T> *);
+    int treeDiff(Node<T> *);
+    Node<T>* treeFind(Node<T>* , T );
+    Node<T> * treeBalance(Node<T> *);
+    Node<T>* treeDeleteNode(Node<T> *,T);
+
+};
+
+
+
+//============================================================================================
+//=========================    DataCenterManager Class    ====================================
+
+
 
 struct Server{
     int opSystem; //Linux=0 , Windows=1.   Default=0.
@@ -19,7 +51,7 @@ struct DataCenter {
 
 class DataCenterManager {
 public:
-    Node<DataCenter> * root;
+    Node<DataCenter>* root;
     StatusType AddDataCenter(int dataCenterID, int numOfServers);
 
     StatusType RemoveDataCenter(int dataCenterID);

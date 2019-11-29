@@ -1,5 +1,6 @@
 #include "library1.h"
 #include "DataCenterManager.h"
+#include "iostream"
 void * Init() {
     DataCenterManager *DS = new DataCenterManager ();
     return ( void *)DS;
