@@ -297,7 +297,7 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
     if(t.treeFind(this->root,ds)==NULL) return FAILURE;
     ds= t.treeFind(this->root,ds)->data;
 
-    //Finding the given server.  O(1)
+    //Finding the given server and updating the os's tree.  O(log(n))
     if((*ds.linuxFirstServerID)==-1 && (*ds.windowsFirstServerID)==-1) return FAILURE; //No free servers available
 
     ds.servers[serverID]->data;
@@ -340,7 +340,6 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         }
         ds.servers[serverID]->data.opSystem=os;
         if(UpdateCountTree(dataCenterID,oldnumofwin,oldnumoflinux,(*ds.numOfWindowsServers),(*ds.numOfLinuxServers))!=SUCCESS){ //O(log(n))
-            cout<<endl<<"PROBSSS 1"<<endl;
             return FAILURE;
         }
         return SUCCESS;
@@ -382,7 +381,8 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         return SUCCESS;
     }
     //Couldn't find a different server with the same operating system; Finding a free server and installing the given OS
-    //O(1)
+    //and updating the os's tree
+    //O(log(n))
     if(os==0 && (*ds.windowsFirstServerID)!= -1){
         serverID=(*ds.windowsFirstServerID);
 
@@ -407,7 +407,6 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         }
         ds.servers[serverID]->data.opSystem=os;
         if(UpdateCountTree(dataCenterID,oldnumofwin,oldnumoflinux,(*ds.numOfWindowsServers),(*ds.numOfLinuxServers))!=SUCCESS){ //O(log(n))
-            cout<<endl<<"PROBSSS 1"<<endl;
             return FAILURE;
         }
         return SUCCESS;
@@ -436,7 +435,6 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         }
         ds.servers[serverID]->data.opSystem=os;
         if(UpdateCountTree(dataCenterID,oldnumofwin,oldnumoflinux,(*ds.numOfWindowsServers),(*ds.numOfLinuxServers))!=SUCCESS){ //O(log(n))
-            cout<<endl<<"PROBSSS 1"<<endl;
             return FAILURE;
         }
         return SUCCESS;
@@ -445,7 +443,7 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
     return FAILURE;
 }
 
-StatusType DataCenterManager::FreeServer(int dataCenterID, int serverID){
+StatusType DataCenterManager::FreeServer(int dataCenterID, int serverID){  // O(log(n))
     //Setting up Data Center.  O(1)
     DataCenter ds;
     ds.dataCenterID=dataCenterID;
@@ -507,7 +505,7 @@ int DataCenterManager::CountDataCenters(Node<DataCenter>* n){
     return 0;
 
 }
-void DataCenterManager::GetDataCentersByOSHelper(Node<Pair>* t,int* i,int** dataCenters) {
+void DataCenterManager::GetDataCentersByOSHelper(Node<Pair>* t,int* i,int** dataCenters) { // O(n)
     if(t == NULL) return;
     GetDataCentersByOSHelper(t->l,i,dataCenters);
     (*dataCenters)[*i]=t->data.dataCenterID;
@@ -515,7 +513,7 @@ void DataCenterManager::GetDataCentersByOSHelper(Node<Pair>* t,int* i,int** data
     GetDataCentersByOSHelper(t->r,i,dataCenters);
 }
 
-StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int* numOfDataCenters){
+StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int* numOfDataCenters){ // O(n)
     if(this->root==NULL) return FAILURE;
     *numOfDataCenters=CountDataCenters(this->root);
     int* array= (int*) malloc((*numOfDataCenters)*sizeof(int));
@@ -526,20 +524,30 @@ StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int*
     *index=0;
     if(os==0)
     {
-        GetDataCentersByOSHelper(this->linuxTree,index,dataCenters);
+        GetDataCentersByOSHelper(this->linuxTree,index,dataCenters); // O(n)
         delete index;
         return SUCCESS;
     }
     if(os==1)
     {
-        GetDataCentersByOSHelper(this->windowsTree,index,dataCenters);
+        GetDataCentersByOSHelper(this->windowsTree,index,dataCenters);// O(n)
         delete index;
         return SUCCESS;
     }
     return FAILURE;
 }
 void DataCenterManager::Quit(){
+    /* AVLTree<DataCenter> x;
+     while(this->root!=NULL)
+     {
+         //TODO: Free Server Array
+         this->root=x.treeDeleteNode(this->root,this->root->data);
+     }
+     AVLTree<Pair> t;
+      while(this->windowsTree!=NULL) this->windowsTree=t.treeDeleteNode(this->windowsTree,this->windowsTree->data);
+     while(this->linuxTree!=NULL) this->linuxTree=t.treeDeleteNode(this->linuxTree,this->linuxTree->data);
 
+     */
 }
 
 bool operator< (const DataCenter& x,const DataCenter& y){

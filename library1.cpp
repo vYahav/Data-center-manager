@@ -31,5 +31,7 @@ StatusType GetDataCentersByOS(void *DS, int os, int **dataCenters, int* numOfDat
 }
 
 void Quit(void** DS){
-    return ((DataCenterManager *)DS)-> Quit ();
+    ((DataCenterManager *)DS)-> Quit ();
+    free(*DS);
+    *DS=NULL;
 }
