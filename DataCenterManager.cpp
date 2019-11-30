@@ -178,10 +178,14 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
     ds.windowsFirstServerID=new int;
     ds.linuxLastServerID=new int;
     ds.windowsLastServerID=new int;
+    ds.numOfWindowsServers=new int;
+    ds.numOfLinuxServers=new int;
     *ds.linuxFirstServerID=0;
     *ds.windowsFirstServerID=-1;
     *ds.linuxLastServerID=numOfServers-1;
     *ds.windowsLastServerID=-1;
+    *ds.numOfWindowsServers=0;
+    *ds.numOfLinuxServers=numOfServers;
 
     if(ds.servers==NULL) return ALLOCATION_ERROR; //Failed to allocate memory for the array
     for (int i = 0; i < numOfServers; i++) { //Creating the servers.  O(m)
@@ -234,7 +238,11 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
     AVLTree<DataCenter> t;
     ds= t.treeFind(this->root,ds)->data;
     if(this->root==NULL) return FAILURE;
+    cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
+
     //Finding the given server.
+    if((*ds.linuxFirstServerID)==-1 && (*ds.windowsFirstServerID)==-1) return FAILURE; //No free servers available
+
     ds.servers[serverID]->data;
     if(!ds.servers[serverID]->data.inUse)
     {
@@ -256,22 +264,120 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         }
         ds.servers[serverID]->data.inUse=true;
         *assignedID=serverID;
+
+        if(ds.servers[serverID]->r!=NULL) ds.servers[serverID]->r->l=ds.servers[serverID]->l;
+        if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
+        ds.servers[serverID]->l=NULL;
+        ds.servers[serverID]->r=NULL;
+        if(os==0 && ds.servers[serverID]->data.opSystem==1)
+        {
+            (*ds.numOfLinuxServers)++;
+            (*ds.numOfWindowsServers)--;
+        }
+        if(os==1 && ds.servers[serverID]->data.opSystem==0)
+        {
+            (*ds.numOfLinuxServers)--;
+            (*ds.numOfWindowsServers)++;
+        }
         ds.servers[serverID]->data.opSystem=os;
+
+        cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
+
+        return SUCCESS;
+    }
+    //serverID is taken; Finding a different server with the same operating system
+    if(os==0 && (*ds.linuxFirstServerID)!=-1){
+        serverID=(*ds.linuxFirstServerID);
+
+        if(ds.servers[serverID]->r!=NULL) (*ds.linuxFirstServerID)=ds.servers[serverID]->r->data.serverID;
+        else{
+            (*ds.linuxFirstServerID) = -1;
+            (*ds.linuxLastServerID) = -1;
+        }
+        ds.servers[serverID]->data.inUse=true;
+        *assignedID=serverID;
+        if(ds.servers[serverID]->r!=NULL) ds.servers[serverID]->r->l=ds.servers[serverID]->l;
+        if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
+        ds.servers[serverID]->l=NULL;
+        ds.servers[serverID]->r=NULL;
+        cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
+
+        return SUCCESS;
+    }
+    if(os==1 && (*ds.windowsFirstServerID)!= -1){
+        serverID=(*ds.windowsFirstServerID);
+
+        if (ds.servers[serverID]->r != NULL) (*ds.windowsFirstServerID) = ds.servers[serverID]->r->data.serverID;
+        else {
+            (*ds.windowsFirstServerID) = -1;
+            (*ds.windowsLastServerID) = -1;
+        }
+
+        ds.servers[serverID]->data.inUse=true;
+        *assignedID=serverID;
+        if(ds.servers[serverID]->r!=NULL) ds.servers[serverID]->r->l=ds.servers[serverID]->l;
+        if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
+        ds.servers[serverID]->l=NULL;
+        ds.servers[serverID]->r=NULL;
+        cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
+
+        return SUCCESS;
+    }
+    //Couldn't find a different server with the same operating system; Finding a free server and installing the given OS
+    if(os==0 && (*ds.windowsFirstServerID)!= -1){
+        serverID=(*ds.windowsFirstServerID);
+
+        if (ds.servers[serverID]->r != NULL) (*ds.windowsFirstServerID) = ds.servers[serverID]->r->data.serverID;
+        else {
+            (*ds.windowsFirstServerID) = -1;
+            (*ds.windowsLastServerID) = -1;
+        }
+
+        ds.servers[serverID]->data.inUse=true;
+        *assignedID=serverID;
         if(ds.servers[serverID]->r!=NULL) ds.servers[serverID]->r->l=ds.servers[serverID]->l;
         if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
         ds.servers[serverID]->l=NULL;
         ds.servers[serverID]->r=NULL;
 
+        if(os==0 && ds.servers[serverID]->data.opSystem==1)
+        {
+            (*ds.numOfLinuxServers)++;
+            (*ds.numOfWindowsServers)--;
+        }
+        ds.servers[serverID]->data.opSystem=os;
+
+        cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
         return SUCCESS;
     }
-    cout<<endl<<"NOT Nice! To The Next Step!"<<endl;
-    //serverID is taken; Finding a different server with the same operating system
 
-    //Couldn't find a different server with the same operating system; Finding a free server and installing the given OS
+    if(os==1 && (*ds.linuxFirstServerID)!=-1){
+        serverID=(*ds.linuxFirstServerID);
 
-    //Remove server from the "free[OS]ServerIDs" stack and update numOfWindowsServers and numOfLinuxServers value accordingly.
-    //Server
-    return SUCCESS;
+        if(ds.servers[serverID]->r!=NULL) (*ds.linuxFirstServerID)=ds.servers[serverID]->r->data.serverID;
+        else{
+            (*ds.linuxFirstServerID) = -1;
+            (*ds.linuxLastServerID) = -1;
+        }
+        ds.servers[serverID]->data.inUse=true;
+        *assignedID=serverID;
+        if(ds.servers[serverID]->r!=NULL) ds.servers[serverID]->r->l=ds.servers[serverID]->l;
+        if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
+        ds.servers[serverID]->l=NULL;
+        ds.servers[serverID]->r=NULL;
+        if(os==1 && ds.servers[serverID]->data.opSystem==0)
+        {
+            (*ds.numOfLinuxServers)--;
+            (*ds.numOfWindowsServers)++;
+        }
+        ds.servers[serverID]->data.opSystem=os;
+
+        cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
+
+        return SUCCESS;
+    }
+
+    return FAILURE;
 }
 
 StatusType DataCenterManager::FreeServer(int dataCenterID, int serverID){

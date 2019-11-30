@@ -52,6 +52,9 @@ struct DataCenter {
     int * windowsFirstServerID;
     int * linuxLastServerID;
     int * windowsLastServerID;
+    int * numOfLinuxServers;
+    int * numOfWindowsServers;
+
 };
 
 class DataCenterManager {
