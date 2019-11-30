@@ -81,7 +81,6 @@ public:
     int CountDataCenters(Node<DataCenter>* n);
     void GetDataCentersByOSHelper(Node<Pair>* t,int* i,int** dataCenters);
     void Quit();
-
 };
 bool operator< (const DataCenter& x,const DataCenter& y);
 bool operator> (const DataCenter& x,const DataCenter& y);

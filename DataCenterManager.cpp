@@ -189,11 +189,8 @@ StatusType DataCenterManager::RemoveFromCountTree(int dataCenterID,int oldNumOfW
     linuxP.dataCenterID=dataCenterID;
     winP.serverCount=oldNumOfWindows;
     linuxP.serverCount=oldNumOfLinux;
-    //Getting the node we want to delete.  O(log(n))
+
     AVLTree<Pair> k;
-    Node<Pair>* linuxnode=k.treeFind(this->linuxTree,linuxP);
-    Node<Pair>* winnode=k.treeFind(this->windowsTree,winP);
-    if(linuxnode==NULL || winnode==NULL) return FAILURE;
     //Removing the node from the tree. O(log(n))
     Node<Pair>* templinux=k.treeDeleteNode(this->linuxTree,linuxP);
     Node<Pair>* tempwindows=k.treeDeleteNode(this->windowsTree,winP);
@@ -267,6 +264,7 @@ StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){   // O(log(n) 
     //Getting the node we want to delete.  O(log(n))
     AVLTree<DataCenter> t;
     Node<DataCenter>* n=t.treeFind(this->root,ds);
+    int numOfServers=n->data.numOfServers;
     int oldnumofwin=*n->data.numOfWindowsServers;
     int oldnumoflinux=*n->data.numOfLinuxServers;
     if(n==NULL) return FAILURE;
@@ -275,13 +273,23 @@ StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){   // O(log(n) 
     this->root=temp;
 
     if(RemoveFromCountTree(dataCenterID,oldnumofwin,oldnumoflinux)!=SUCCESS){
-        cout<<endl<<"WHAT?!"<<endl;
+        cout<<"RemoveFromCountTree tree problem"<<endl;
         return FAILURE;
     }
 
-    //Free-ing the node values. O(1)
+    //Free-ing the node values. O(m)
+
+    for (int i = 0; i < numOfServers; i++) {
+        delete (n->data.servers)[i];
+    }
     delete n->data.servers;
-    delete n;
+    delete n->data.linuxFirstServerID;
+    delete n->data.windowsFirstServerID;
+    delete n->data.linuxLastServerID;
+    delete n->data.windowsLastServerID;
+    delete n->data.numOfLinuxServers;
+    delete n->data.numOfWindowsServers;
+
     //NEED TO ADD HERE: FREE THE SERVERS NODES AND ARRAY AND int POINTERS
 
     //Done.
@@ -536,18 +544,18 @@ StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int*
     }
     return FAILURE;
 }
-void DataCenterManager::Quit(){
-    /* AVLTree<DataCenter> x;
-     while(this->root!=NULL)
-     {
-         //TODO: Free Server Array
-         this->root=x.treeDeleteNode(this->root,this->root->data);
-     }
-     AVLTree<Pair> t;
-      while(this->windowsTree!=NULL) this->windowsTree=t.treeDeleteNode(this->windowsTree,this->windowsTree->data);
-     while(this->linuxTree!=NULL) this->linuxTree=t.treeDeleteNode(this->linuxTree,this->linuxTree->data);
 
-     */
+
+void DataCenterManager::Quit(){ //O(n+m)  m- Amount of all servers in all datacenters
+    //Delete root (main tree)
+
+     AVLTree<Pair> t;
+     //Delete windowsTree
+    //while(this->windowsTree) this->windowsTree=t.treeDeleteNode(this->windowsTree,this->windowsTree->data);//O(n)
+    //Delete linuxTree
+    //while(this->linuxTree) this->linuxTree=t.treeDeleteNode(this->linuxTree,this->linuxTree->data);//O(n)
+
+
 }
 
 bool operator< (const DataCenter& x,const DataCenter& y){
@@ -564,10 +572,13 @@ bool operator== (const DataCenter& x,const DataCenter& y){
 }
 bool operator< (const Pair& x,const Pair& y){
     if(x.serverCount>y.serverCount) return true;
+    if(x.serverCount==y.serverCount && x.dataCenterID<y.dataCenterID) return true;
     return false;
 }
 bool operator> (const Pair& x,const Pair& y){
     if(x.serverCount<y.serverCount) return true;
+    if(x.serverCount==y.serverCount && x.dataCenterID>y.dataCenterID) return true;
+
     return false;
 }
 bool operator== (const Pair& x,const Pair& y){
