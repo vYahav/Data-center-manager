@@ -236,9 +236,8 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
     ds.dataCenterID=dataCenterID;
     //Retrieving the given Data Center. O(log(n))
     AVLTree<DataCenter> t;
+    if(t.treeFind(this->root,ds)==NULL) return FAILURE;
     ds= t.treeFind(this->root,ds)->data;
-    if(this->root==NULL) return FAILURE;
-    cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
 
     //Finding the given server.  O(1)
     if((*ds.linuxFirstServerID)==-1 && (*ds.windowsFirstServerID)==-1) return FAILURE; //No free servers available
@@ -281,8 +280,6 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         }
         ds.servers[serverID]->data.opSystem=os;
 
-        cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
-
         return SUCCESS;
     }
     //serverID is taken; Finding a different server with the same operating system.  O(1)
@@ -300,7 +297,6 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
         ds.servers[serverID]->l=NULL;
         ds.servers[serverID]->r=NULL;
-        cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
 
         return SUCCESS;
     }
@@ -319,7 +315,6 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
         ds.servers[serverID]->l=NULL;
         ds.servers[serverID]->r=NULL;
-        cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
 
         return SUCCESS;
     }
@@ -347,8 +342,6 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
             (*ds.numOfWindowsServers)--;
         }
         ds.servers[serverID]->data.opSystem=os;
-
-        cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
         return SUCCESS;
     }
 
@@ -373,8 +366,6 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         }
         ds.servers[serverID]->data.opSystem=os;
 
-        cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
-
         return SUCCESS;
     }
 
@@ -387,8 +378,8 @@ StatusType DataCenterManager::FreeServer(int dataCenterID, int serverID){
     ds.dataCenterID=dataCenterID;
     //Retrieving the given Data Center. O(log(n))
     AVLTree<DataCenter> t;
+    if(t.treeFind(this->root,ds)==NULL) return FAILURE;
     ds= t.treeFind(this->root,ds)->data;
-    if(this->root==NULL) return FAILURE;
     if(serverID>=ds.numOfServers) return INVALID_INPUT;
     //Finding the given server and changing "inUse" to False.  O(1)
     if(!ds.servers[serverID]->data.inUse) return FAILURE;
