@@ -79,7 +79,7 @@ public:
     StatusType RemoveFromCountTree(int dataCenterID,int oldNumOfWindows,int oldNumOfLinux);
     StatusType UpdateCountTree(int dataCenterID,int oldNumOfWindows,int oldNumOfLinux,int newNumOfWindows,int newNumOfLinux);
     int CountDataCenters(Node<DataCenter>* n);
-
+    void GetDataCentersByOSHelper(Node<Pair>* t,int* i,int** dataCenters);
     void Quit();
 
 };

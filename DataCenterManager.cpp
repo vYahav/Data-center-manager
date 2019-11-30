@@ -503,20 +503,33 @@ int DataCenterManager::CountDataCenters(Node<DataCenter>* n){
     return 0;
 
 }
+void DataCenterManager::GetDataCentersByOSHelper(Node<Pair>* t,int* i,int** dataCenters) {
+    if(t == NULL) return;
+    GetDataCentersByOSHelper(t->l,i,dataCenters);
+    (*dataCenters)[*i]=t->data.dataCenterID;
+    (*i)++;
+    GetDataCentersByOSHelper(t->r,i,dataCenters);
+}
 
 StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int* numOfDataCenters){
     if(this->root==NULL) return FAILURE;
-    *numOfDataCenters=0;
     *numOfDataCenters=CountDataCenters(this->root);
-    cout<<endl<<"COUNT RESULT:"<<*numOfDataCenters<<endl;
     int* array= (int*) malloc((*numOfDataCenters)*sizeof(int));
-    dataCenters=(int**) malloc(sizeof(array));
+
     *dataCenters=array;
-    if(os==0){
-        //linuxTree inorder traversal
+    int* index=new int;
+    *index=0;
+    if(os==0)
+    {
+        GetDataCentersByOSHelper(this->linuxTree,index,dataCenters);
+        delete index;
+        return SUCCESS;
     }
-    if(os==1){
-        //winTree inorder
+    if(os==1)
+    {
+        GetDataCentersByOSHelper(this->windowsTree,index,dataCenters);
+        delete index;
+        return SUCCESS;
     }
     return FAILURE;
 }
@@ -537,11 +550,11 @@ bool operator== (const DataCenter& x,const DataCenter& y){
     return false;
 }
 bool operator< (const Pair& x,const Pair& y){
-    if(x.serverCount<y.serverCount) return true;
+    if(x.serverCount>y.serverCount) return true;
     return false;
 }
 bool operator> (const Pair& x,const Pair& y){
-    if(x.serverCount>y.serverCount) return true;
+    if(x.serverCount<y.serverCount) return true;
     return false;
 }
 bool operator== (const Pair& x,const Pair& y){
