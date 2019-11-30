@@ -229,6 +229,9 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
     ds.windowsLastServerID=new int;
     ds.numOfWindowsServers=new int;
     ds.numOfLinuxServers=new int;
+    if(ds.linuxFirstServerID==NULL || ds.windowsFirstServerID==NULL || ds.linuxLastServerID==NULL
+    || ds.windowsLastServerID==NULL || ds.numOfWindowsServers==NULL
+    || ds.numOfLinuxServers==NULL) return ALLOCATION_ERROR;
     *ds.linuxFirstServerID=0;
     *ds.windowsFirstServerID=-1;
     *ds.linuxLastServerID=numOfServers-1;
@@ -239,6 +242,7 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
     if(ds.servers==NULL) return ALLOCATION_ERROR; //Failed to allocate memory for the array
     for (int i = 0; i < numOfServers; i++) { //Creating the servers.  O(m)
         Node<Server>* newNode= new Node<Server>;
+        if(newNode==NULL) return ALLOCATION_ERROR;
         (*newNode).data.opSystem=0;
         (*newNode).data.inUse=false;
         (*newNode).data.serverID=i;
@@ -515,9 +519,10 @@ StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int*
     if(this->root==NULL) return FAILURE;
     *numOfDataCenters=CountDataCenters(this->root);
     int* array= (int*) malloc((*numOfDataCenters)*sizeof(int));
-
+    if(array==NULL) return ALLOCATION_ERROR;
     *dataCenters=array;
     int* index=new int;
+    if(index==NULL) return ALLOCATION_ERROR;
     *index=0;
     if(os==0)
     {
