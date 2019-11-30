@@ -78,7 +78,7 @@ public:
     StatusType AddToCountTree(int dataCenterID,int numOfWindows,int numOfLinux);
     StatusType RemoveFromCountTree(int dataCenterID,int oldNumOfWindows,int oldNumOfLinux);
     StatusType UpdateCountTree(int dataCenterID,int oldNumOfWindows,int oldNumOfLinux,int newNumOfWindows,int newNumOfLinux);
-
+    int CountDataCenters(Node<DataCenter>* n);
 
     void Quit();
 

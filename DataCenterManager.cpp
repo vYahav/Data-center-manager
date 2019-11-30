@@ -253,7 +253,6 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
     ds.servers[numOfServers-1]->r=NULL;
     //Inserting the data center in the tree.  O(2*log(n)) = O(log(n))
      this->root = t.treeInsert(this->root , ds);
-
      return AddToCountTree(dataCenterID,0,numOfServers); // O(log(n))
 }
 
@@ -496,13 +495,29 @@ StatusType DataCenterManager::FreeServer(int dataCenterID, int serverID){
 
     return FAILURE;
 }
+int DataCenterManager::CountDataCenters(Node<DataCenter>* n){
+    if(n->l!=NULL && n->r!=NULL) return 1+CountDataCenters(n->l) + CountDataCenters(n->r);
+    if(n->l!=NULL) return 1+CountDataCenters(n->l);
+    if(n->r!=NULL) return 1+CountDataCenters(n->r);
+    if(n->r==NULL && n->l==NULL) return 1;
+    return 0;
+
+}
 
 StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int* numOfDataCenters){
     if(this->root==NULL) return FAILURE;
-
-    //Iterating through the main tree and adding every node on that tree to a new AVL tree, sorted by numOf[OS]Servers.
-
-    //Inorder traversal
+    *numOfDataCenters=0;
+    *numOfDataCenters=CountDataCenters(this->root);
+    cout<<endl<<"COUNT RESULT:"<<*numOfDataCenters<<endl;
+    int* array= (int*) malloc((*numOfDataCenters)*sizeof(int));
+    dataCenters=(int**) malloc(sizeof(array));
+    *dataCenters=array;
+    if(os==0){
+        //linuxTree inorder traversal
+    }
+    if(os==1){
+        //winTree inorder
+    }
     return FAILURE;
 }
 void DataCenterManager::Quit(){
