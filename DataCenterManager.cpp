@@ -174,8 +174,15 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
     ds.dataCenterID=dataCenterID;
     ds.numOfServers=numOfServers;
     ds.servers=new Node<Server>*[numOfServers];
-    ds.firstServerID=new int;
-    *ds.firstServerID=0;
+    ds.linuxFirstServerID=new int;
+    ds.windowsFirstServerID=new int;
+    ds.linuxLastServerID=new int;
+    ds.windowsLastServerID=new int;
+    *ds.linuxFirstServerID=0;
+    *ds.windowsFirstServerID=-1;
+    *ds.linuxLastServerID=numOfServers-1;
+    *ds.windowsLastServerID=-1;
+
     if(ds.servers==NULL) return ALLOCATION_ERROR; //Failed to allocate memory for the array
     for (int i = 0; i < numOfServers; i++) { //Creating the servers.  O(m)
         Node<Server>* newNode= new Node<Server>;
@@ -213,7 +220,7 @@ StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){   // O(log(n) 
     //Free-ing the node values. O(1)
     delete n->data.servers;
     delete n;
-    //NEED TO ADD HERE: FREE THE SERVERS NODES AND ARRAY
+    //NEED TO ADD HERE: FREE THE SERVERS NODES AND ARRAY AND int POINTERS
 
     //Done.
     return SUCCESS;
@@ -231,9 +238,21 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
     ds.servers[serverID]->data;
     if(!ds.servers[serverID]->data.inUse)
     {
-        if((*ds.firstServerID)==serverID && ds.servers[serverID]->r!=NULL)
+        if((*ds.linuxFirstServerID)==serverID)
         {
-            (*ds.firstServerID)=ds.servers[serverID]->r->data.serverID;
+            if(ds.servers[serverID]->r!=NULL)(*ds.linuxFirstServerID)=ds.servers[serverID]->r->data.serverID;
+            else{
+                (*ds.linuxFirstServerID) = -1;
+                (*ds.linuxLastServerID) = -1;
+            }
+        }
+        if((*ds.windowsFirstServerID)==serverID)
+        {
+            if(ds.servers[serverID]->r!=NULL) (*ds.windowsFirstServerID)=ds.servers[serverID]->r->data.serverID;
+            else{
+                (*ds.windowsFirstServerID) = -1;
+                (*ds.windowsLastServerID) = -1;
+            }
         }
         ds.servers[serverID]->data.inUse=true;
         *assignedID=serverID;
@@ -287,7 +306,3 @@ bool operator== (const DataCenter& x,const DataCenter& y){
     if(x.dataCenterID==y.dataCenterID) return true;
     return false;
 }
-
-
-
-
