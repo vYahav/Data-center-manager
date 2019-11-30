@@ -16,10 +16,12 @@ StatusType RemoveDataCenter(void *DS, int dataCenterID){
 }
 
 StatusType RequestServer(void *DS, int dataCenterID, int serverID, int os, int *assignedID){
+    if(DS==NULL || serverID<0 || assignedID==NULL || os>1 || os<0 || dataCenterID<=0) return INVALID_INPUT;
     return ((DataCenterManager *)DS)-> RequestServer (dataCenterID,serverID,os,assignedID);
 }
 
 StatusType FreeServer(void *DS, int dataCenterID, int serverID){
+    if(DS==NULL || serverID<0 || dataCenterID<=0) return INVALID_INPUT;
     return ((DataCenterManager *)DS)-> FreeServer (dataCenterID,serverID);
 }
 

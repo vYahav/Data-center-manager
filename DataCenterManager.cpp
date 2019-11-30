@@ -240,7 +240,7 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
     if(this->root==NULL) return FAILURE;
     cout<<endl<<"numOfLinuxServers: "<< (*ds.numOfLinuxServers)<<" numOfWindowsServers: "<<(*ds.numOfWindowsServers) <<endl;
 
-    //Finding the given server.
+    //Finding the given server.  O(1)
     if((*ds.linuxFirstServerID)==-1 && (*ds.windowsFirstServerID)==-1) return FAILURE; //No free servers available
 
     ds.servers[serverID]->data;
@@ -285,7 +285,7 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
 
         return SUCCESS;
     }
-    //serverID is taken; Finding a different server with the same operating system
+    //serverID is taken; Finding a different server with the same operating system.  O(1)
     if(os==0 && (*ds.linuxFirstServerID)!=-1){
         serverID=(*ds.linuxFirstServerID);
 
@@ -324,6 +324,7 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         return SUCCESS;
     }
     //Couldn't find a different server with the same operating system; Finding a free server and installing the given OS
+    //O(1)
     if(os==0 && (*ds.windowsFirstServerID)!= -1){
         serverID=(*ds.windowsFirstServerID);
 
@@ -381,13 +382,58 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
 }
 
 StatusType DataCenterManager::FreeServer(int dataCenterID, int serverID){
-    //Setting up Data Center. O(1)
-
+    //Setting up Data Center.  O(1)
+    DataCenter ds;
+    ds.dataCenterID=dataCenterID;
     //Retrieving the given Data Center. O(log(n))
-
+    AVLTree<DataCenter> t;
+    ds= t.treeFind(this->root,ds)->data;
+    if(this->root==NULL) return FAILURE;
+    if(serverID>=ds.numOfServers) return INVALID_INPUT;
     //Finding the given server and changing "inUse" to False.  O(1)
+    if(!ds.servers[serverID]->data.inUse) return FAILURE;
+    ds.servers[serverID]->data.inUse=false;
 
-    return SUCCESS;
+
+
+    int os=ds.servers[serverID]->data.opSystem;
+    if(os==0){
+        //Setting linuxLastServerID to serverID.  O(1)
+        if((*ds.linuxLastServerID)==-1){
+            (*ds.linuxLastServerID)=serverID;
+            (*ds.linuxFirstServerID)=serverID;
+        }
+        else{
+            int serverBeforeLastID;
+            serverBeforeLastID=(*ds.linuxLastServerID);
+            //Updating linuxLastServerID from old to new serverID.  O(1)
+            (*ds.linuxLastServerID)=serverID;
+            //Putting the server in the node list, as the last node, linking it with the previous last node.  O(1)
+            ds.servers[serverBeforeLastID]->r=ds.servers[serverID];
+            ds.servers[serverID]->l=ds.servers[serverBeforeLastID];
+        }
+        return SUCCESS;
+    }
+
+    if(os==1){
+        //Setting windowsLastServerID to serverID.  O(1)
+        if((*ds.windowsLastServerID)==-1){
+            (*ds.windowsLastServerID)=serverID;
+            (*ds.windowsFirstServerID)=serverID;
+        }
+        else{
+            int serverBeforeLastID;
+            serverBeforeLastID=(*ds.windowsLastServerID);
+            //Updating linuxLastServerID from old to new serverID.  O(1)
+            (*ds.windowsLastServerID)=serverID;
+            //Putting the server in the node list, as the last node, linking it with the previous last node.  O(1)
+            ds.servers[serverBeforeLastID]->r=ds.servers[serverID];
+            ds.servers[serverID]->l=ds.servers[serverBeforeLastID];
+        }
+        return SUCCESS;
+    }
+
+    return FAILURE;
 }
 
 StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int* numOfDataCenters){
