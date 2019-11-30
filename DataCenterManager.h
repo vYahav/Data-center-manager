@@ -38,7 +38,10 @@ public:
 //=========================    DataCenterManager Class    ====================================
 
 
-
+struct Pair{
+    int dataCenterID;
+    int serverCount;
+};
 struct Server{
     int opSystem; //Linux=0 , Windows=1.   Default=0.
     bool inUse; //True= server is currently in use , False= server is free to use.   Default=False.
@@ -60,6 +63,8 @@ struct DataCenter {
 class DataCenterManager {
 public:
     Node<DataCenter>* root;
+    Node<Pair>* windowsTree;
+    Node<Pair>* linuxTree;
     StatusType AddDataCenter(int dataCenterID, int numOfServers);
 
     StatusType RemoveDataCenter(int dataCenterID);
@@ -70,12 +75,19 @@ public:
 
     StatusType GetDataCentersByOS(int os, int **dataCenters, int* numOfDataCenters);
 
+    StatusType AddToCountTree(int dataCenterID,int numOfWindows,int numOfLinux);
+    StatusType RemoveFromCountTree(int dataCenterID,int oldNumOfWindows,int oldNumOfLinux);
+    StatusType UpdateCountTree(int dataCenterID,int oldNumOfWindows,int oldNumOfLinux,int newNumOfWindows,int newNumOfLinux);
+
+
     void Quit();
 
 };
 bool operator< (const DataCenter& x,const DataCenter& y);
 bool operator> (const DataCenter& x,const DataCenter& y);
 bool operator== (const DataCenter& x,const DataCenter& y);
-
+bool operator< (const Pair& x,const Pair& y);
+bool operator> (const Pair& x,const Pair& y);
+bool operator== (const Pair& x,const Pair& y);
 
 #endif //MIVNIRATUV1_DATACENTERMANAGER_H

@@ -168,10 +168,59 @@ Node<T>* AVLTree<T>::treeDeleteNode(Node<T> *n,T deleteNode) {
 
 //============================================================================================
 //=========================    DataCenterManager Class Functions    ==========================
+StatusType DataCenterManager::AddToCountTree(int dataCenterID,int numOfWindows,int numOfLinux){
+    //Adding to [os]Tree.  O(2*log(n))=O(log(n))
+    AVLTree<Pair> k;
+    Pair linuxP,windowsP;
+    linuxP.dataCenterID=dataCenterID;
+    windowsP.dataCenterID=dataCenterID;
+    linuxP.serverCount=numOfLinux;
+    windowsP.serverCount=numOfWindows;
+    this->linuxTree=k.treeInsert(this->linuxTree,linuxP);
+    this->windowsTree=k.treeInsert(this->windowsTree,windowsP);
+    //----
+    return SUCCESS;
+}
+StatusType DataCenterManager::RemoveFromCountTree(int dataCenterID,int oldNumOfWindows,int oldNumOfLinux){
+    //Removing data center from windowsTree and linuxTree
+    //Setting up the Pair to look for.  O(1)
+    Pair winP,linuxP;
+    winP.dataCenterID=dataCenterID;
+    linuxP.dataCenterID=dataCenterID;
+    winP.serverCount=oldNumOfWindows;
+    linuxP.serverCount=oldNumOfLinux;
+    //Getting the node we want to delete.  O(log(n))
+    AVLTree<Pair> k;
+    Node<Pair>* linuxnode=k.treeFind(this->linuxTree,linuxP);
+    Node<Pair>* winnode=k.treeFind(this->windowsTree,winP);
+    if(linuxnode==NULL || winnode==NULL) return FAILURE;
+    //Removing the node from the tree. O(log(n))
+    Node<Pair>* templinux=k.treeDeleteNode(this->linuxTree,linuxP);
+    Node<Pair>* tempwindows=k.treeDeleteNode(this->windowsTree,winP);
+
+    this->linuxTree=templinux;
+    this->windowsTree=tempwindows;
+    //---
+    return SUCCESS;
+}
+StatusType DataCenterManager::UpdateCountTree(int dataCenterID,int oldNumOfWindows,int oldNumOfLinux,int newNumOfWindows,int newNumOfLinux){
+    RemoveFromCountTree(dataCenterID,oldNumOfWindows,oldNumOfLinux);
+    AddToCountTree(dataCenterID,newNumOfWindows,newNumOfLinux);
+}
+
+
+
+
+
+
 StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){ // O(log(n) + m)
     //Setting up the Data Center.  O(m)
+    AVLTree<DataCenter> t;
     DataCenter ds;
     ds.dataCenterID=dataCenterID;
+
+    if(t.treeFind(this->root,ds)!=NULL) return FAILURE; //return failure because there is already a center with this ID.   O(log(n))
+
     ds.numOfServers=numOfServers;
     ds.servers=new Node<Server>*[numOfServers];
     ds.linuxFirstServerID=new int;
@@ -203,10 +252,9 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
     }
     ds.servers[numOfServers-1]->r=NULL;
     //Inserting the data center in the tree.  O(2*log(n)) = O(log(n))
-    AVLTree<DataCenter> t;
-    if(t.treeFind(this->root,ds)!=NULL) return FAILURE; //return failure because there is already a center with this ID.   O(log(n))
-    this->root = t.treeInsert(this->root , ds);
-    return SUCCESS;
+     this->root = t.treeInsert(this->root , ds);
+
+     return AddToCountTree(dataCenterID,0,numOfServers); // O(log(n))
 }
 
 StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){   // O(log(n) + m)
@@ -216,11 +264,18 @@ StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){   // O(log(n) 
     //Getting the node we want to delete.  O(log(n))
     AVLTree<DataCenter> t;
     Node<DataCenter>* n=t.treeFind(this->root,ds);
+    int oldnumofwin=*n->data.numOfWindowsServers;
+    int oldnumoflinux=*n->data.numOfLinuxServers;
     if(n==NULL) return FAILURE;
     //Removing the node from the tree. O(log(n))
     Node<DataCenter>* temp=t.treeDeleteNode(this->root,ds);
-    if(temp==NULL) return FAILURE;
     this->root=temp;
+
+    if(RemoveFromCountTree(dataCenterID,oldnumofwin,oldnumoflinux)!=SUCCESS){
+        cout<<endl<<"WHAT?!"<<endl;
+        return FAILURE;
+    }
+
     //Free-ing the node values. O(1)
     delete n->data.servers;
     delete n;
@@ -268,6 +323,8 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
         ds.servers[serverID]->l=NULL;
         ds.servers[serverID]->r=NULL;
+        int oldnumofwin=(*ds.numOfWindowsServers);
+        int oldnumoflinux=(*ds.numOfLinuxServers);
         if(os==0 && ds.servers[serverID]->data.opSystem==1)
         {
             (*ds.numOfLinuxServers)++;
@@ -279,7 +336,10 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
             (*ds.numOfWindowsServers)++;
         }
         ds.servers[serverID]->data.opSystem=os;
-
+        if(UpdateCountTree(dataCenterID,oldnumofwin,oldnumoflinux,(*ds.numOfWindowsServers),(*ds.numOfLinuxServers))!=SUCCESS){ //O(log(n))
+            cout<<endl<<"PROBSSS 1"<<endl;
+            return FAILURE;
+        }
         return SUCCESS;
     }
     //serverID is taken; Finding a different server with the same operating system.  O(1)
@@ -335,13 +395,18 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
         ds.servers[serverID]->l=NULL;
         ds.servers[serverID]->r=NULL;
-
+        int oldnumofwin=(*ds.numOfWindowsServers);
+        int oldnumoflinux=(*ds.numOfLinuxServers);
         if(os==0 && ds.servers[serverID]->data.opSystem==1)
         {
             (*ds.numOfLinuxServers)++;
             (*ds.numOfWindowsServers)--;
         }
         ds.servers[serverID]->data.opSystem=os;
+        if(UpdateCountTree(dataCenterID,oldnumofwin,oldnumoflinux,(*ds.numOfWindowsServers),(*ds.numOfLinuxServers))!=SUCCESS){ //O(log(n))
+            cout<<endl<<"PROBSSS 1"<<endl;
+            return FAILURE;
+        }
         return SUCCESS;
     }
 
@@ -359,13 +424,18 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
         if(ds.servers[serverID]->l!=NULL) ds.servers[serverID]->l->r=ds.servers[serverID]->r;
         ds.servers[serverID]->l=NULL;
         ds.servers[serverID]->r=NULL;
+        int oldnumofwin=(*ds.numOfWindowsServers);
+        int oldnumoflinux=(*ds.numOfLinuxServers);
         if(os==1 && ds.servers[serverID]->data.opSystem==0)
         {
             (*ds.numOfLinuxServers)--;
             (*ds.numOfWindowsServers)++;
         }
         ds.servers[serverID]->data.opSystem=os;
-
+        if(UpdateCountTree(dataCenterID,oldnumofwin,oldnumoflinux,(*ds.numOfWindowsServers),(*ds.numOfLinuxServers))!=SUCCESS){ //O(log(n))
+            cout<<endl<<"PROBSSS 1"<<endl;
+            return FAILURE;
+        }
         return SUCCESS;
     }
 
@@ -428,10 +498,12 @@ StatusType DataCenterManager::FreeServer(int dataCenterID, int serverID){
 }
 
 StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int* numOfDataCenters){
-    //Iterating through all of the data centers and putting them in an array.  O(n)
+    if(this->root==NULL) return FAILURE;
 
-    //Sorting
-    return SUCCESS;
+    //Iterating through the main tree and adding every node on that tree to a new AVL tree, sorted by numOf[OS]Servers.
+
+    //Inorder traversal
+    return FAILURE;
 }
 void DataCenterManager::Quit(){
 
@@ -446,6 +518,18 @@ bool operator> (const DataCenter& x,const DataCenter& y){
     return false;
 }
 bool operator== (const DataCenter& x,const DataCenter& y){
+    if(x.dataCenterID==y.dataCenterID) return true;
+    return false;
+}
+bool operator< (const Pair& x,const Pair& y){
+    if(x.serverCount<y.serverCount) return true;
+    return false;
+}
+bool operator> (const Pair& x,const Pair& y){
+    if(x.serverCount>y.serverCount) return true;
+    return false;
+}
+bool operator== (const Pair& x,const Pair& y){
     if(x.dataCenterID==y.dataCenterID) return true;
     return false;
 }

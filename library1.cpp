@@ -26,6 +26,7 @@ StatusType FreeServer(void *DS, int dataCenterID, int serverID){
 }
 
 StatusType GetDataCentersByOS(void *DS, int os, int **dataCenters, int* numOfDataCenters){
+    if(DS==NULL || dataCenters==NULL || os>1 || numOfDataCenters==NULL || os<0) return INVALID_INPUT;
     return ((DataCenterManager *)DS)-> GetDataCentersByOS (os,dataCenters,numOfDataCenters);
 }
 
