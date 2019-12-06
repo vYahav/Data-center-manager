@@ -13,6 +13,7 @@ struct Node {
     T data;
     struct Node<T> *l;
     struct Node<T> *r;
+    int height;
 };
 
 
@@ -21,10 +22,10 @@ class AVLTree {
 public:
     int treeHeight(Node<T> *);
     Node<T>* treeInsert(Node<T>*, T);
-    Node<T> *RR(Node<T> *);
-    Node<T> *LL(Node<T> *);
-    Node<T> *LR(Node<T> *);
-    Node<T> *RL(Node<T> *);
+    Node<T> *DR(Node<T> *);
+    Node<T> *SR(Node<T> *);
+    Node<T> *SL(Node<T> *);
+    Node<T> *DL(Node<T> *);
     int treeDiff(Node<T> *);
     Node<T>* treeFind(Node<T>* , T );
     Node<T> * treeBalance(Node<T> *);
@@ -65,6 +66,7 @@ public:
     Node<DataCenter>* root;
     Node<Pair>* windowsTree;
     Node<Pair>* linuxTree;
+
     StatusType AddDataCenter(int dataCenterID, int numOfServers);
 
     StatusType RemoveDataCenter(int dataCenterID);

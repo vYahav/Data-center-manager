@@ -18,34 +18,39 @@ using namespace std;
 //============================================================================================
 //=========================    AVLTree Class Functions    ====================================
 template<class T>
-Node<T>* AVLTree<T>::RR(Node<T>* n){
-    Node<T> * n2;
-    n2 = n->r;
-    n->r = n2->l;
-    n2->l = n;
-    return n2;
-}
-template<class T>
-Node<T>* AVLTree<T>::LL(Node<T>* n){
+Node<T>* AVLTree<T>::SR(Node<T>* n){
     Node<T> * n2;
     n2 = n->l;
     n->l = n2->r;
     n2->r = n;
+    n->height = max(treeHeight(n->l), treeHeight(n->r))+1;
+    n2->height = max(treeHeight(n2->l), n->height)+1;
     return n2;
 }
 template<class T>
-Node<T>* AVLTree<T>::LR(Node<T>* n){
+Node<T>* AVLTree<T>::SL(Node<T>* n){
+    Node<T> * n2;
+    n2 = n->r;
+    n->r = n2->l;
+    n2->l = n;
+    n->height = max(treeHeight(n->l), treeHeight(n->r))+1;
+    n2->height = max(treeHeight(n2->r), n->height)+1;
+    return n2;
+}
+
+template<class T>
+Node<T>* AVLTree<T>::DR(Node<T>* n){
     Node<T> * n2;
     n2 = n->l;
-    n->l = RR(n2);
-    return LL(n);
+    n->l = SL(n2);
+    return SR(n);
 }
 template<class T>
-Node<T>* AVLTree<T>::RL(Node<T>* n){
+Node<T>* AVLTree<T>::DL(Node<T>* n){
     Node<T> *n2;
     n2 = n->r;
-    n->r = LL(n2);
-    return RR(n);
+    n->r = SR(n2);
+    return SL(n);
 }
 
 int max(int i, int j){
@@ -55,15 +60,9 @@ int max(int i, int j){
 
 template<class T>
 int AVLTree<T>::treeHeight(Node<T>* n) {
-    int h = 0;
-    if (n == NULL) return h;
+    if (n == NULL) return -1;
+    return n->height;
 
-    int lh = treeHeight(n->l);
-    int rh = treeHeight(n->r);
-    int maxh = max(lh, rh);
-    h = maxh + 1;
-
-    return h;
 }
 
 template<class T>
@@ -81,14 +80,14 @@ Node<T>* AVLTree<T>::treeBalance(Node<T>* n){
     int bal_factor = treeDiff(n);
     if (bal_factor > 1) {
         if (treeDiff(n->l) > 0)
-            n = LL(n);
+            n = SR(n);
         else
-            n = LR(n);
+            n = DR(n);
     } else if (bal_factor < -1) {
         if (treeDiff(n->r) > 0)
-            n = RL(n);
+            n = DL(n);
         else
-            n = RR(n);
+            n = SL(n);
     }
     return n;
 }
@@ -101,6 +100,7 @@ Node<T>* AVLTree<T>::treeInsert(Node<T>* n, T newdata)
         n->data = newdata;
         n->l = NULL;
         n->r = NULL;
+        n->height=0;
         return n;
     } else if (newdata< n->data) {
         n->l = treeInsert(n->l, newdata);
@@ -108,7 +108,9 @@ Node<T>* AVLTree<T>::treeInsert(Node<T>* n, T newdata)
     } else{
         n->r = treeInsert(n->r, newdata);
         n = treeBalance(n);
-    } return n;
+    }
+    n->height = max(treeHeight(n->l), treeHeight(n->r))+1;
+    return n;
 }
 
 template<class T>
@@ -144,7 +146,7 @@ Node<T>* AVLTree<T>::treeDeleteNode(Node<T> *n,T deleteNode) {
             else{
                 *n = *helper;
             }
-            free(helper);
+            delete helper;
         }
         else{ //2 children
             Node<T>* temp = n->r;
@@ -158,6 +160,7 @@ Node<T>* AVLTree<T>::treeDeleteNode(Node<T> *n,T deleteNode) {
         }
 
     }
+    if(n!=NULL) n->height = max(treeHeight(n->l), treeHeight(n->r))+1;
     if(n!=NULL) n= treeBalance(n);
     return n;
 }
@@ -203,6 +206,7 @@ StatusType DataCenterManager::RemoveFromCountTree(int dataCenterID,int oldNumOfW
 StatusType DataCenterManager::UpdateCountTree(int dataCenterID,int oldNumOfWindows,int oldNumOfLinux,int newNumOfWindows,int newNumOfLinux){
     RemoveFromCountTree(dataCenterID,oldNumOfWindows,oldNumOfLinux);
     AddToCountTree(dataCenterID,newNumOfWindows,newNumOfLinux);
+    return SUCCESS;
 }
 
 
@@ -227,8 +231,8 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
     ds.numOfWindowsServers=new int;
     ds.numOfLinuxServers=new int;
     if(ds.linuxFirstServerID==NULL || ds.windowsFirstServerID==NULL || ds.linuxLastServerID==NULL
-    || ds.windowsLastServerID==NULL || ds.numOfWindowsServers==NULL
-    || ds.numOfLinuxServers==NULL) return ALLOCATION_ERROR;
+       || ds.windowsLastServerID==NULL || ds.numOfWindowsServers==NULL
+       || ds.numOfLinuxServers==NULL) return ALLOCATION_ERROR;
     *ds.linuxFirstServerID=0;
     *ds.windowsFirstServerID=-1;
     *ds.linuxLastServerID=numOfServers-1;
@@ -253,8 +257,8 @@ StatusType DataCenterManager::AddDataCenter(int dataCenterID, int numOfServers){
     }
     ds.servers[numOfServers-1]->r=NULL;
     //Inserting the data center in the tree.  O(2*log(n)) = O(log(n))
-     this->root = t.treeInsert(this->root , ds);
-     return AddToCountTree(dataCenterID,0,numOfServers); // O(log(n))
+    this->root = t.treeInsert(this->root , ds);
+    return AddToCountTree(dataCenterID,0,numOfServers); // O(log(n))
 }
 
 StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){   // O(log(n) + m)
@@ -262,35 +266,38 @@ StatusType DataCenterManager::RemoveDataCenter(int dataCenterID){   // O(log(n) 
     DataCenter ds;
     ds.dataCenterID=dataCenterID;
     //Getting the node we want to delete.  O(log(n))
+
     AVLTree<DataCenter> t;
     Node<DataCenter>* n=t.treeFind(this->root,ds);
-    int numOfServers=n->data.numOfServers;
+
+    if(n==NULL) return FAILURE;
+
     int oldnumofwin=*n->data.numOfWindowsServers;
     int oldnumoflinux=*n->data.numOfLinuxServers;
+
     if(n==NULL) return FAILURE;
     //Removing the node from the tree. O(log(n))
-    Node<DataCenter>* temp=t.treeDeleteNode(this->root,ds);
-    this->root=temp;
+
 
     if(RemoveFromCountTree(dataCenterID,oldnumofwin,oldnumoflinux)!=SUCCESS){
-        cout<<"RemoveFromCountTree tree problem"<<endl;
         return FAILURE;
     }
 
-    //Free-ing the node values. O(m)
-
+    int numOfServers=n->data.numOfServers;
     for (int i = 0; i < numOfServers; i++) {
-        delete (n->data.servers)[i];
+        delete n->data.servers[i];
     }
-    delete n->data.servers;
+    delete[] n->data.servers;
     delete n->data.linuxFirstServerID;
     delete n->data.windowsFirstServerID;
     delete n->data.linuxLastServerID;
     delete n->data.windowsLastServerID;
     delete n->data.numOfLinuxServers;
-    delete n->data.numOfWindowsServers;
+    delete n->data.numOfWindowsServers;//*/
 
-    //NEED TO ADD HERE: FREE THE SERVERS NODES AND ARRAY AND int POINTERS
+
+    Node<DataCenter>* temp=t.treeDeleteNode(this->root,ds);
+    this->root=temp;
 
     //Done.
     return SUCCESS;
@@ -304,11 +311,10 @@ StatusType DataCenterManager::RequestServer(int dataCenterID, int serverID, int 
     AVLTree<DataCenter> t;
     if(t.treeFind(this->root,ds)==NULL) return FAILURE;
     ds= t.treeFind(this->root,ds)->data;
-
+    if(serverID>=ds.numOfServers) return INVALID_INPUT;
     //Finding the given server and updating the os's tree.  O(log(n))
     if((*ds.linuxFirstServerID)==-1 && (*ds.windowsFirstServerID)==-1) return FAILURE; //No free servers available
 
-    ds.servers[serverID]->data;
     if(!ds.servers[serverID]->data.inUse)
     {
         if((*ds.linuxFirstServerID)==serverID)
@@ -546,15 +552,45 @@ StatusType DataCenterManager::GetDataCentersByOS(int os, int **dataCenters, int*
 }
 
 
+
 void DataCenterManager::Quit(){ //O(n+m)  m- Amount of all servers in all datacenters
-    //Delete root (main tree)
+    //Delete root   (main tree)
+    AVLTree<DataCenter> t;
+    while(this->root!=NULL) {
 
-     AVLTree<Pair> t;
-     //Delete windowsTree
-    //while(this->windowsTree) this->windowsTree=t.treeDeleteNode(this->windowsTree,this->windowsTree->data);//O(n)
-    //Delete linuxTree
-    //while(this->linuxTree) this->linuxTree=t.treeDeleteNode(this->linuxTree,this->linuxTree->data);//O(n)
+        Node<DataCenter>* n=this->root;
+        int numOfServers=n->data.numOfServers;
+        for (int i = 0; i < numOfServers; i++) {
+            delete n->data.servers[i];
+        }
+        delete[] n->data.servers;
+        delete n->data.linuxFirstServerID;
+        delete n->data.windowsFirstServerID;
+        delete n->data.linuxLastServerID;
+        delete n->data.windowsLastServerID;
+        delete n->data.numOfLinuxServers;
+        delete n->data.numOfWindowsServers;//*/
 
+        Node<DataCenter>* temp=t.treeDeleteNode(this->root,this->root->data);//O(1) Because it needs to find the root,
+        //and the root is the first one so the
+        //the function doesnt iterate through
+        //the entire tree.
+        this->root=temp;
+    }
+    AVLTree<Pair> k;
+    while(this->linuxTree!=NULL){
+        Node<Pair>* temp=k.treeDeleteNode(this->linuxTree,this->linuxTree->data); //O(1) Because it needs to find the root,
+        this->linuxTree=temp;                                                     //and the root is the first one so the
+        //the function doesnt iterate through
+        //the entire tree.
+    }
+    while(this->windowsTree!=NULL){
+        Node<Pair>* temp=k.treeDeleteNode(this->windowsTree,this->windowsTree->data);//O(1) Because it needs to find the root,
+        this->windowsTree=temp;                                                     //and the root is the first one so the
+    }                                                                               //the function doesnt iterate through
+    delete this->root;                                                              //the entire tree.
+    delete this->linuxTree;
+    delete this->windowsTree;
 
 }
 
